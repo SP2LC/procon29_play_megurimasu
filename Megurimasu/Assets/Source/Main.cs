@@ -139,32 +139,37 @@ namespace Meguru
                 createFieldIsFinish = true;
             }
 
-            if (15f < timeElapsed) // Reload
+            if (5f < timeElapsed) // Reload
             {
                 timeElapsed = 0;
                 if (!createFieldIsFinish) // フィールドがない
                     return;
 
-                ConnectServer con = new ConnectServer(); // データのロード
-                StartCoroutine(con.Connect());
-
-                TileReset(); // タイルのリセット
-                AgentPositionReset(); // Agentタイルのリセット
-                nowWatchTurn = 0;
-
-                field = Field.ReadStatic(); // 再読み込み
-                agents = Agent.ReadStatic(); // 再読み込み
-
-                if (field == null) // 情報が読み込まれていない
-                    return;
-
-                AddActionToAgent(Action.ReadDynamic(agents)); // agentsにactionを設定
-
-                AgentPosition(); // Agentの位置更新
-                TileUpdate(); // タイルのアップデート
-                TextUpdate(); // テキストのアップデート
+                StartCoroutine(ReloadCoroutine());
             }
             //-------------------------//
+        }
+
+        private IEnumerator ReloadCoroutine()
+        {
+            ConnectServer con = new ConnectServer(); // データのロード
+            yield return StartCoroutine(con.Connect());
+
+            TileReset(); // タイルのリセット
+            AgentPositionReset(); // Agentタイルのリセット
+            nowWatchTurn = 0;
+
+            field = Field.ReadStatic(); // 再読み込み
+            agents = Agent.ReadStatic(); // 再読み込み
+
+            if (field == null) // 情報が読み込まれていない
+                yield break;
+
+            AddActionToAgent(Action.ReadDynamic(agents)); // agentsにactionを設定
+
+            AgentPosition(); // Agentの位置更新
+            TileUpdate(); // タイルのアップデート
+            TextUpdate(); // テキストのアップデート
         }
 
         //---------------------------------出力---------------------------------//
