@@ -83,6 +83,7 @@ namespace Meguru
         private GameObject allRedAgent; // Hierarchy
         private GameObject allBlueTile; // Hierarchy
         private GameObject allRedTile; // Hierarchy
+        private GameObject timerText; // Timer表示用Text
         private Vector3 tilePosition; // タイルの座標
         public GameObject pointTextPrefab; // prefab化されたテキスト
         private GameObject textInstant; // インスタンス化されたテキスト
@@ -108,6 +109,8 @@ namespace Meguru
             allBlueTile = GameObject.Find("BlueTile");
             allRedTile = GameObject.Find("RedTile");
 
+            timerText = GameObject.Find("Canvas/Timer");
+
             createFieldIsFinish = false;
             nowWatchTurn = 0;
         }
@@ -116,6 +119,7 @@ namespace Meguru
         void Update()
         {
             timeElapsed += Time.deltaTime;
+            timerText.GetComponent<Text>().text = timeElapsed.ToString();
 
             //-----------出力-----------//
             if (Input.GetKeyUp(KeyCode.C) || 0 < Input.touchCount) // Create
@@ -139,7 +143,7 @@ namespace Meguru
                 createFieldIsFinish = true;
             }
 
-            if (5f < timeElapsed) // Reload
+            if (8f < timeElapsed) // Reload
             {
                 timeElapsed = 0;
                 if (!createFieldIsFinish) // フィールドがない
