@@ -89,6 +89,7 @@ namespace Meguru
         private Text pointText; // インスタンス化されたテキスト
         private RectTransform textRect; //テキストのRectTransform
         private Vector2 textPosition; // テキストの最終的な位置
+        private float timeElapsed; // Update関数のタイマー処理に利用
 
         Field field; // フィールド(タイルの集合体)
         List<Agent> agents; // Agentの情報s
@@ -114,6 +115,8 @@ namespace Meguru
         // Update is called once per frame
         void Update()
         {
+            timeElapsed += Time.deltaTime;
+
             //-----------出力-----------//
             if (Input.GetKeyUp(KeyCode.C) || 0 < Input.touchCount) // Create
             {
@@ -136,12 +139,14 @@ namespace Meguru
                 createFieldIsFinish = true;
             }
 
-            if (Input.GetKeyUp(KeyCode.R)) // Reload
+            if (15f < timeElapsed) // Reload
             {
-                if (!System.IO.File.Exists(ReadData.staticData) || !System.IO.File.Exists(ReadData.dynamicData)) // ファイルがない
-                    return;
+                timeElapsed = 0;
                 if (!createFieldIsFinish) // フィールドがない
                     return;
+
+                ConnectServer con = new ConnectServer(); // データのロード
+                StartCoroutine(con.Connect());
 
                 TileReset(); // タイルのリセット
                 AgentPositionReset(); // Agentタイルのリセット
@@ -333,21 +338,25 @@ namespace Meguru
                     // ブルーAgentのタイル
                     tile = Instantiate(blueAgent, tilePosition, Quaternion.identity);
                     tile.transform.SetParent(allBlueAgent.transform, false);
+                    tile.GetComponent<SpriteRenderer>().enabled = false;
                     BlueAgentRename(tile, w, h); // タイルの名前を変更
 
                     // レッドAgentのタイル
                     tile = Instantiate(redAgent, tilePosition, Quaternion.identity);
                     tile.transform.SetParent(allRedAgent.transform, false);
+                    tile.GetComponent<SpriteRenderer>().enabled = false;
                     RedAgentRename(tile, w, h); // タイルの名前を変更
 
                     // ブルーのタイル
                     tile = Instantiate(blueTile, tilePosition, Quaternion.identity);
                     tile.transform.SetParent(allBlueTile.transform, false);
+                    tile.GetComponent<SpriteRenderer>().enabled = false;
                     BlueTileRename(tile, w, h); // タイルの名前を変更
 
                     // レッドのタイル
                     tile = Instantiate(redTile, tilePosition, Quaternion.identity);
                     tile.transform.SetParent(allRedTile.transform, false);
+                    tile.GetComponent<SpriteRenderer>().enabled = false;
                     RedTileRename(tile, w, h); // タイルの名前を変更
 
                     // ポイント関連
