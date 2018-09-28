@@ -93,8 +93,6 @@ namespace Meguru
         Field field; // フィールド(タイルの集合体)
         List<Agent> agents; // Agentの情報s
         Output data; // 再入力から出力する用のデータの集合体
-        private Way tempWay;
-        private Motion tempMotion;
         private bool dataInputIsFinish; // 再入力用のデータ入力が完了したかどうか
         private int idData; // Output用のデータ作成のAgentの識別に用いる
         private bool createFieldIsFinish; // フィールドを作成したかどうか
@@ -109,8 +107,6 @@ namespace Meguru
             allBlueTile = GameObject.Find("BlueTile");
             allRedTile = GameObject.Find("RedTile");
 
-            tempWay = Way.STAY;
-            tempMotion = Motion.STAY;
             createFieldIsFinish = false;
             nowWatchTurn = 0;
         }
@@ -119,11 +115,9 @@ namespace Meguru
         void Update()
         {
             //-----------出力-----------//
-            if (Input.GetKeyUp(KeyCode.C)) // Create
+            if (Input.GetKeyUp(KeyCode.C) || 0 < Input.touchCount) // Create
             {
-                Debug.Log(PathSet.staticPath);
-                if (!System.IO.File.Exists(PathSet.staticPath) || !System.IO.File.Exists(PathSet.dynamicPath)) // ファイルがない
-                    return;
+                Debug.Log(ReadData.staticData);
                 if (createFieldIsFinish) // フィールドが作成済み
                     return;
 
@@ -144,7 +138,7 @@ namespace Meguru
 
             if (Input.GetKeyUp(KeyCode.R)) // Reload
             {
-                if (!System.IO.File.Exists(PathSet.staticPath) || !System.IO.File.Exists(PathSet.dynamicPath)) // ファイルがない
+                if (!System.IO.File.Exists(ReadData.staticData) || !System.IO.File.Exists(ReadData.dynamicData)) // ファイルがない
                     return;
                 if (!createFieldIsFinish) // フィールドがない
                     return;
@@ -323,14 +317,14 @@ namespace Meguru
             /*
             半分の1/2 * マス目の比率を合わせるための1/3で1/6
              */
-            widSym = (float)(field.Width - 5) / 3f;
-            heiSym = (float)(field.Height - 1) / 3f;
+            widSym = (float)(field.Width - 1) / 4.5f;
+            heiSym = (float)(field.Height - 1) / 4.5f;
 
             for (int h = 0; h < field.Height; h++)
             {
                 for (int w = 0; w < field.Width; w++)
                 {
-                    tilePosition = new Vector3((float)w / 1.5f - widSym, (float)(9 - h) / 1.5f - heiSym, 500);
+                    tilePosition = new Vector3((float)w / 2.25f - widSym, (float)(9 - h) / 2.25f - heiSym, 500);
                     // グレーのタイル
                     tile = Instantiate(grayTile, tilePosition, Quaternion.identity);
                     tile.transform.SetParent(allGrayTile.transform, false);

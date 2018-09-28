@@ -26,8 +26,8 @@ namespace Meguru
 
             string allText;
 
-            // ファイル読み込み
-            allText = File.ReadAllText(PathSet.dynamicPath);
+            // データ渡し
+            allText = ReadData.dynamicData;
             // 読み込みやすくするため，文字を置き換える
             allText = allText.Replace("[", ",").Replace("(", "").Replace(")", "").Replace("]", "");
 

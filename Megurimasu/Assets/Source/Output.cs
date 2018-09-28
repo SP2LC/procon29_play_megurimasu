@@ -13,8 +13,6 @@ namespace Meguru
         public Field field;
         public List<Agent> agents;
 
-        public string outputData;
-
         public Output()
         {
             this.field = Field.ReadStatic();
@@ -59,9 +57,7 @@ namespace Meguru
                     bondData += "/";
             }
 
-            System.IO.StreamWriter output = new System.IO.StreamWriter(PathSet.staticPath, false);
-            output.Write(bondData);
-            output.Close();
+            ReadData.staticData = bondData;
         }
     }
 }

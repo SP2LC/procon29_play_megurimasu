@@ -35,11 +35,9 @@ namespace Meguru
         public static Field ReadStatic()
         {
             Field returnField;
-            // ファイルが存在しなかったらリターン
-            if (!System.IO.File.Exists(PathSet.staticPath)) return null;
 
-            // ファイル読み込み
-            var allText = File.ReadAllText(PathSet.staticPath);
+            // データを渡す
+            var allText = ReadData.staticData;
             // 読み込みやすくするため，文字を置き換える
             allText = allText.Replace("/", ":");
 

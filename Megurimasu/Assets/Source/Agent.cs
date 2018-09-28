@@ -24,16 +24,12 @@ namespace Meguru
 
         public static List<Agent> ReadStatic()
         {
-            // ファイルが存在しなかったらリターン
-            if (!System.IO.File.Exists(PathSet.staticPath))
-                return null;
-
             Point first;
             var agents = new List<Agent>();
 
             string allText;
-            // ファイル読み込み
-            allText = File.ReadAllText(PathSet.staticPath);
+            // データ渡し
+            allText = ReadData.staticData;
 
             var target = allText.Split(',')[1];
 
