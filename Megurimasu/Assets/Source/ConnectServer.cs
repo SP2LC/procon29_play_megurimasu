@@ -19,7 +19,7 @@ namespace Meguru
 
         public IEnumerator Connect()
         {
-            string url = "http://mokapants.sakura.ne.jp/test.txt";
+            string url = "http://megurimasu-sp2lc.skr.jp/test.txt";
             var www = new WWW(url);
             yield return www;
             ReadData.staticData = www.text;
