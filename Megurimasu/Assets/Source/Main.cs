@@ -92,8 +92,8 @@ namespace Meguru
         private Text pointText; // インスタンス化されたテキスト
         private RectTransform textRect; //テキストのRectTransform
         private Vector2 textPosition; // テキストの最終的な位置
-        private GameObject clickedGameObject;
 
+        private string clickedGameObject; // クリックしたゲームオブジェクト
         private float timeElapsed; // Update関数のタイマー処理に利用
         Field field; // フィールド(タイルの集合体)
         List<Agent> agents; // Agentの情報s
@@ -117,25 +117,7 @@ namespace Meguru
 
             createFieldIsFinish = false;
 
-            //-------------フィールド作成-------------//
-            Debug.Log(ReadData.staticData);
-            if (createFieldIsFinish) // フィールドが作成済み
-                return;
-
-            field = Field.ReadStatic(); // Field情報の読み込み
-            agents = Agent.ReadStatic(); // Agent情報の読み込み
-
-            if (field == null) // 情報が読み込まれていない
-                return;
-
-            AddActionToAgent(Action.ReadDynamic(agents)); // agentsにactionを設定
-
-            CreateField(); // マスの生成
-            AgentPosition(); // Agentの位置更新
-            TileUpdate(); // タイルのアップデート
-            AgentPosition(); // Agentの位置情報の追加
-            createFieldIsFinish = true;
-            //-------------------------------------//
+            makeField(); //フィールド作成
         }
 
         // Update is called once per frame
@@ -155,11 +137,19 @@ namespace Meguru
 
                 if (hit2d)
                 {
-                    clickedGameObject = hit2d.transform.gameObject;
+                    clickedGameObject = hit2d.transform.gameObject.name;
                 }
 
                 // 操作
-
+                if (clickedGameObject != null)
+                {
+                    Debug.Log(clickedGameObject);
+                    //if (clickedGameObject == )
+                }
+                else
+                {
+                    Debug.Log("nullである");
+                }
             }
 
             if (8f < timeElapsed) // Reload
@@ -195,6 +185,28 @@ namespace Meguru
         }
 
         //---------------------------------出力---------------------------------//
+
+        // フィールド作成
+        private void makeField()
+        {
+            Debug.Log(ReadData.staticData);
+            if (createFieldIsFinish) // フィールドが作成済み
+                return;
+
+            field = Field.ReadStatic(); // Field情報の読み込み
+            agents = Agent.ReadStatic(); // Agent情報の読み込み
+
+            if (field == null) // 情報が読み込まれていない
+                return;
+
+            AddActionToAgent(Action.ReadDynamic(agents)); // agentsにactionを設定
+
+            CreateField(); // マスの生成
+            AgentPosition(); // Agentの位置更新
+            TileUpdate(); // タイルのアップデート
+            AgentPosition(); // Agentの位置情報の追加
+            createFieldIsFinish = true;
+        }
 
         // それぞれのAgentの読み込んだActionを設定する
         private void AddActionToAgent(List<Action> actions)
