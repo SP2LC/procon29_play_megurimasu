@@ -78,11 +78,13 @@ namespace Meguru
         public GameObject redAgent; // prefab
         public GameObject blueTile; // prefab
         public GameObject redTile; // prefab
+        public GameObject selectTile; // prefab
         private GameObject allGrayTile; // Hierarchy
         private GameObject allBlueAgent; // Hierarchy
         private GameObject allRedAgent; // Hierarchy
         private GameObject allBlueTile; // Hierarchy
         private GameObject allRedTile; // Hierarchy
+        private GameObject allSelectTile; // Hierarchy
         private GameObject timerText; // Timer表示用Text
         private Vector3 tilePosition; // タイルの座標
         public GameObject pointTextPrefab; // prefab化されたテキスト
@@ -90,15 +92,16 @@ namespace Meguru
         private Text pointText; // インスタンス化されたテキスト
         private RectTransform textRect; //テキストのRectTransform
         private Vector2 textPosition; // テキストの最終的な位置
-        private float timeElapsed; // Update関数のタイマー処理に利用
+        private GameObject clickedGameObject;
 
+        private float timeElapsed; // Update関数のタイマー処理に利用
         Field field; // フィールド(タイルの集合体)
         List<Agent> agents; // Agentの情報s
         Output data; // 再入力から出力する用のデータの集合体
         private bool dataInputIsFinish; // 再入力用のデータ入力が完了したかどうか
         private int idData; // Output用のデータ作成のAgentの識別に用いる
         private bool createFieldIsFinish; // フィールドを作成したかどうか
-        private int nowWatchTurn; // 探索から来たファイルの何ターン目をみてるか
+
 
         // Use this for initialization
         void Start()
@@ -108,11 +111,31 @@ namespace Meguru
             allRedAgent = GameObject.Find("RedAgent");
             allBlueTile = GameObject.Find("BlueTile");
             allRedTile = GameObject.Find("RedTile");
+            allSelectTile = GameObject.Find("SelectTile");
 
             timerText = GameObject.Find("Canvas/Timer");
 
             createFieldIsFinish = false;
-            nowWatchTurn = 0;
+
+            //-------------フィールド作成-------------//
+            Debug.Log(ReadData.staticData);
+            if (createFieldIsFinish) // フィールドが作成済み
+                return;
+
+            field = Field.ReadStatic(); // Field情報の読み込み
+            agents = Agent.ReadStatic(); // Agent情報の読み込み
+
+            if (field == null) // 情報が読み込まれていない
+                return;
+
+            AddActionToAgent(Action.ReadDynamic(agents)); // agentsにactionを設定
+
+            CreateField(); // マスの生成
+            AgentPosition(); // Agentの位置更新
+            TileUpdate(); // タイルのアップデート
+            AgentPosition(); // Agentの位置情報の追加
+            createFieldIsFinish = true;
+            //-------------------------------------//
         }
 
         // Update is called once per frame
@@ -122,25 +145,21 @@ namespace Meguru
             timerText.GetComponent<Text>().text = timeElapsed.ToString();
 
             //-----------出力-----------//
-            if (Input.GetKeyUp(KeyCode.C) || 0 < Input.touchCount) // Create
+            if (Input.GetMouseButtonDown(0))
             {
-                Debug.Log(ReadData.staticData);
-                if (createFieldIsFinish) // フィールドが作成済み
-                    return;
+                // クリックしたものの取得
+                clickedGameObject = null;
 
-                field = Field.ReadStatic(); // Field情報の読み込み
-                agents = Agent.ReadStatic(); // Agent情報の読み込み
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                RaycastHit2D hit2d = Physics2D.Raycast((Vector2)ray.origin, (Vector2)ray.direction);
 
-                if (field == null) // 情報が読み込まれていない
-                    return;
+                if (hit2d)
+                {
+                    clickedGameObject = hit2d.transform.gameObject;
+                }
 
-                AddActionToAgent(Action.ReadDynamic(agents)); // agentsにactionを設定
+                // 操作
 
-                CreateField(); // マスの生成
-                AgentPosition(); // Agentの位置更新
-                TileUpdate(); // タイルのアップデート
-                AgentPosition(); // Agentの位置情報の追加
-                createFieldIsFinish = true;
             }
 
             if (8f < timeElapsed) // Reload
@@ -161,7 +180,6 @@ namespace Meguru
 
             TileReset(); // タイルのリセット
             AgentPositionReset(); // Agentタイルのリセット
-            nowWatchTurn = 0;
 
             field = Field.ReadStatic(); // 再読み込み
             agents = Agent.ReadStatic(); // 再読み込み
@@ -177,29 +195,6 @@ namespace Meguru
         }
 
         //---------------------------------出力---------------------------------//
-        // Agentの位置情報をactions.wayから次のターンの位置に更新(タイル情報も更新)
-        private void AgentWillMove()
-        {
-            for (int id = 0; id < 4; id += 3)
-            {
-                agents[id].current += Action.EnumToPoint(agents[id].actions[nowWatchTurn]);
-                var x = agents[id].current.x;
-                var y = agents[id].current.y;
-                switch (id)
-                {
-                    case 0:
-                    case 3:
-                        field.tiles[x, y].stat = 1;
-                        break;
-                    case 1:
-                    case 2:
-                        field.tiles[x, y].stat = 2;
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
 
         // それぞれのAgentの読み込んだActionを設定する
         private void AddActionToAgent(List<Action> actions)
@@ -277,11 +272,13 @@ namespace Meguru
                     case 3:
                         GameObject.Find("redagent_" + agent.current.x + "_" + agent.current.y).GetComponent<SpriteRenderer>().enabled = true;
                         GameObject.Find("redtile_" + agent.current.x + "_" + agent.current.y).GetComponent<SpriteRenderer>().enabled = true;
+                        GameObject.Find("redagent_" + agent.current.x + "_" + agent.current.y).GetComponent<BoxCollider2D>().enabled = true;
                         break;
                     case 1:
                     case 2:
                         GameObject.Find("blueagent_" + agent.current.x + "_" + agent.current.y).GetComponent<SpriteRenderer>().enabled = true;
                         GameObject.Find("bluetile_" + agent.current.x + "_" + agent.current.y).GetComponent<SpriteRenderer>().enabled = true;
+                        GameObject.Find("blueagent_" + agent.current.x + "_" + agent.current.y).GetComponent<BoxCollider2D>().enabled = true;
                         break;
                     default:
                         break;
@@ -300,10 +297,12 @@ namespace Meguru
                     case 0:
                     case 3:
                         GameObject.Find("redagent_" + agent.current.x + "_" + agent.current.y).GetComponent<SpriteRenderer>().enabled = false;
+                        GameObject.Find("redagent_" + agent.current.x + "_" + agent.current.y).GetComponent<BoxCollider2D>().enabled = false;
                         break;
                     case 1:
                     case 2:
                         GameObject.Find("blueagent_" + agent.current.x + "_" + agent.current.y).GetComponent<SpriteRenderer>().enabled = false;
+                        GameObject.Find("blueagent_" + agent.current.x + "_" + agent.current.y).GetComponent<BoxCollider2D>().enabled = false;
                         break;
                     default:
                         break;
@@ -348,12 +347,14 @@ namespace Meguru
                     tile = Instantiate(blueAgent, tilePosition, Quaternion.identity);
                     tile.transform.SetParent(allBlueAgent.transform, false);
                     tile.GetComponent<SpriteRenderer>().enabled = false;
+                    tile.GetComponent<BoxCollider2D>().enabled = false;
                     BlueAgentRename(tile, w, h); // タイルの名前を変更
 
                     // レッドAgentのタイル
                     tile = Instantiate(redAgent, tilePosition, Quaternion.identity);
                     tile.transform.SetParent(allRedAgent.transform, false);
                     tile.GetComponent<SpriteRenderer>().enabled = false;
+                    tile.GetComponent<BoxCollider2D>().enabled = false;
                     RedAgentRename(tile, w, h); // タイルの名前を変更
 
                     // ブルーのタイル
@@ -367,6 +368,13 @@ namespace Meguru
                     tile.transform.SetParent(allRedTile.transform, false);
                     tile.GetComponent<SpriteRenderer>().enabled = false;
                     RedTileRename(tile, w, h); // タイルの名前を変更
+
+                    // ブルーのタイル
+                    tile = Instantiate(selectTile, tilePosition, Quaternion.identity);
+                    tile.transform.SetParent(allSelectTile.transform, false);
+                    tile.GetComponent<SpriteRenderer>().enabled = false;
+                    tile.GetComponent<BoxCollider2D>().enabled = false;
+                    SelectTileRename(tile, w, h); // タイルの名前を変更
 
                     // ポイント関連
                     CreatePoint(tilePosition, w, h); // ポイントの書かれた文字の生成
@@ -392,34 +400,40 @@ namespace Meguru
         /*
         ここから下はのちのちコードで記憶するかも
          */
-        // マスの名前を座標に変更 "graytile_h_w"
+        // マスの名前を座標に変更 "graytile_w_h"
         private void GrayTileRename(GameObject tile, int width, int height)
         {
             tile.name = "graytile_" + width + "_" + height;
         }
 
-        // マスの名前を座標に変更 "blueagent_h_w"
+        // マスの名前を座標に変更 "blueagent_w_h"
         private void BlueAgentRename(GameObject tile, int width, int height)
         {
             tile.name = "blueagent_" + width + "_" + height;
         }
 
-        // マスの名前を座標に変更 "redagent_h_w"
+        // マスの名前を座標に変更 "redagent_w_h"
         private void RedAgentRename(GameObject tile, int width, int height)
         {
             tile.name = "redagent_" + width + "_" + height;
         }
 
-        // マスの名前を座標に変更 "bluetile_h_w"
+        // マスの名前を座標に変更 "bluetile_w_h"
         private void BlueTileRename(GameObject tile, int width, int height)
         {
             tile.name = "bluetile_" + width + "_" + height;
         }
 
-        // マスの名前を座標に変更 "redtile_h_w"
+        // マスの名前を座標に変更 "redtile_w_h"
         private void RedTileRename(GameObject tile, int width, int height)
         {
             tile.name = "redtile_" + width + "_" + height;
+        }
+
+        // マスの名前を座標に変更 "selecttile_w_h"
+        private void SelectTileRename(GameObject tile, int width, int height)
+        {
+            tile.name = "selecttile_" + width + "_" + height;
         }
 
         // ポイントが書かれたテキストの名前を座標に変更 "point_h_w"
