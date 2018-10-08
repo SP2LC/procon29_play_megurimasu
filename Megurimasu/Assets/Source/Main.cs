@@ -144,7 +144,14 @@ namespace Meguru
                 if (clickedGameObject != null)
                 {
                     Debug.Log(clickedGameObject);
-                    //if (clickedGameObject == )
+                    if (clickedGameObject.Contains("redagent"))
+                    {
+                        Debug.Log("赤");
+                    }
+                    else if (clickedGameObject.Contains("blueagent"))
+                    {
+                        Debug.Log("青");
+                    }
                 }
                 else
                 {
@@ -231,15 +238,16 @@ namespace Meguru
             {
                 for (int h = 0; h < field.Height; h++)
                 {
+                    string current = w + "," + h;
                     switch (field.tiles[w, h].stat)
                     {
                         case 0:
                             break;
                         case 1:
-                            GameObject.Find("redtile_" + w + "_" + h).GetComponent<SpriteRenderer>().enabled = true;
+                            GameObject.Find("redtile_" + current).GetComponent<SpriteRenderer>().enabled = true;
                             break;
                         case 2:
-                            GameObject.Find("bluetile_" + w + "_" + h).GetComponent<SpriteRenderer>().enabled = true;
+                            GameObject.Find("bluetile_" + current).GetComponent<SpriteRenderer>().enabled = true;
                             break;
                         default:
                             break;
@@ -255,15 +263,16 @@ namespace Meguru
             {
                 for (int h = 0; h < field.Height; h++)
                 {
+                    string current = w + "," + h;
                     switch (field.tiles[w, h].stat)
                     {
                         case 0:
                             break;
                         case 1:
-                            GameObject.Find("redtile_" + w + "_" + h).GetComponent<SpriteRenderer>().enabled = false;
+                            GameObject.Find("redtile_" + current).GetComponent<SpriteRenderer>().enabled = false;
                             break;
                         case 2:
-                            GameObject.Find("bluetile_" + w + "_" + h).GetComponent<SpriteRenderer>().enabled = false;
+                            GameObject.Find("bluetile_" + current).GetComponent<SpriteRenderer>().enabled = false;
                             break;
                         default:
                             break;
@@ -277,20 +286,21 @@ namespace Meguru
         {
             foreach (Agent agent in agents)
             {
+                string current = agent.current.x + "," + agent.current.y;
                 switch (agent.id)
                 {
                     // タイルそれぞれの描画設定のオンオフで判別する GetComponent<SpriteRenderer>()
                     case 0:
                     case 3:
-                        GameObject.Find("redagent_" + agent.current.x + "_" + agent.current.y).GetComponent<SpriteRenderer>().enabled = true;
-                        GameObject.Find("redtile_" + agent.current.x + "_" + agent.current.y).GetComponent<SpriteRenderer>().enabled = true;
-                        GameObject.Find("redagent_" + agent.current.x + "_" + agent.current.y).GetComponent<BoxCollider2D>().enabled = true;
+                        GameObject.Find("redagent_" + current).GetComponent<SpriteRenderer>().enabled = true;
+                        GameObject.Find("redtile_" + current).GetComponent<SpriteRenderer>().enabled = true;
+                        GameObject.Find("redagent_" + current).GetComponent<BoxCollider2D>().enabled = true;
                         break;
                     case 1:
                     case 2:
-                        GameObject.Find("blueagent_" + agent.current.x + "_" + agent.current.y).GetComponent<SpriteRenderer>().enabled = true;
-                        GameObject.Find("bluetile_" + agent.current.x + "_" + agent.current.y).GetComponent<SpriteRenderer>().enabled = true;
-                        GameObject.Find("blueagent_" + agent.current.x + "_" + agent.current.y).GetComponent<BoxCollider2D>().enabled = true;
+                        GameObject.Find("blueagent_" + current).GetComponent<SpriteRenderer>().enabled = true;
+                        GameObject.Find("bluetile_" + current).GetComponent<SpriteRenderer>().enabled = true;
+                        GameObject.Find("blueagent_" + current).GetComponent<BoxCollider2D>().enabled = true;
                         break;
                     default:
                         break;
@@ -303,18 +313,19 @@ namespace Meguru
         {
             foreach (Agent agent in agents)
             {
+                string current = agent.current.x + "_" + agent.current.y;
                 switch (agent.id)
                 {
                     // タイルそれぞれの描画設定のオンオフで判別する GetComponent<SpriteRenderer>()
                     case 0:
                     case 3:
-                        GameObject.Find("redagent_" + agent.current.x + "_" + agent.current.y).GetComponent<SpriteRenderer>().enabled = false;
-                        GameObject.Find("redagent_" + agent.current.x + "_" + agent.current.y).GetComponent<BoxCollider2D>().enabled = false;
+                        GameObject.Find("redagent_" + current).GetComponent<SpriteRenderer>().enabled = false;
+                        GameObject.Find("redagent_" + current).GetComponent<BoxCollider2D>().enabled = false;
                         break;
                     case 1:
                     case 2:
-                        GameObject.Find("blueagent_" + agent.current.x + "_" + agent.current.y).GetComponent<SpriteRenderer>().enabled = false;
-                        GameObject.Find("blueagent_" + agent.current.x + "_" + agent.current.y).GetComponent<BoxCollider2D>().enabled = false;
+                        GameObject.Find("blueagent_" + current).GetComponent<SpriteRenderer>().enabled = false;
+                        GameObject.Find("blueagent_" + current).GetComponent<BoxCollider2D>().enabled = false;
                         break;
                     default:
                         break;
@@ -329,7 +340,7 @@ namespace Meguru
             {
                 for (int w = 0; w < field.Width; w++)
                 {
-                    textInstant = GameObject.Find("point_" + w + "_" + h);
+                    textInstant = GameObject.Find("point_" + w + "," + h);
                     pointText = textInstant.GetComponent<Text>();
                     pointText.text = field.tiles[w, h].point.ToString();
                 }
@@ -415,43 +426,43 @@ namespace Meguru
         // マスの名前を座標に変更 "graytile_w_h"
         private void GrayTileRename(GameObject tile, int width, int height)
         {
-            tile.name = "graytile_" + width + "_" + height;
+            tile.name = "graytile_" + width + "," + height;
         }
 
         // マスの名前を座標に変更 "blueagent_w_h"
         private void BlueAgentRename(GameObject tile, int width, int height)
         {
-            tile.name = "blueagent_" + width + "_" + height;
+            tile.name = "blueagent_" + width + "," + height;
         }
 
         // マスの名前を座標に変更 "redagent_w_h"
         private void RedAgentRename(GameObject tile, int width, int height)
         {
-            tile.name = "redagent_" + width + "_" + height;
+            tile.name = "redagent_" + width + "," + height;
         }
 
         // マスの名前を座標に変更 "bluetile_w_h"
         private void BlueTileRename(GameObject tile, int width, int height)
         {
-            tile.name = "bluetile_" + width + "_" + height;
+            tile.name = "bluetile_" + width + "," + height;
         }
 
         // マスの名前を座標に変更 "redtile_w_h"
         private void RedTileRename(GameObject tile, int width, int height)
         {
-            tile.name = "redtile_" + width + "_" + height;
+            tile.name = "redtile_" + width + "," + height;
         }
 
         // マスの名前を座標に変更 "selecttile_w_h"
         private void SelectTileRename(GameObject tile, int width, int height)
         {
-            tile.name = "selecttile_" + width + "_" + height;
+            tile.name = "selecttile_" + width + "," + height;
         }
 
         // ポイントが書かれたテキストの名前を座標に変更 "point_h_w"
         private void PointRename(Text point, int width, int height)
         {
-            point.name = "point_" + width + "_" + height;
+            point.name = "point_" + width + "," + height;
         }
         //---------------------------------------------------------------------//
     }
