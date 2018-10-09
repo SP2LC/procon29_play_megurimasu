@@ -5,6 +5,8 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 
+using System.Linq;
+
 namespace Meguru
 {
     /*
@@ -101,6 +103,7 @@ namespace Meguru
         private bool dataInputIsFinish; // 再入力用のデータ入力が完了したかどうか
         private int idData; // Output用のデータ作成のAgentの識別に用いる
         private bool createFieldIsFinish; // フィールドを作成したかどうか
+        private int[] selectCoordinate; // 選択した座標 [0]:x, [1]:y
 
 
         // Use this for initialization
@@ -116,6 +119,7 @@ namespace Meguru
             timerText = GameObject.Find("Canvas/Timer");
 
             createFieldIsFinish = false;
+            selectCoordinate = new int[2] { -1, -1 };
 
             makeField(); //フィールド作成
         }
@@ -143,15 +147,25 @@ namespace Meguru
                 // 操作
                 if (clickedGameObject != null)
                 {
-                    Debug.Log(clickedGameObject);
-                    if (clickedGameObject.Contains("redagent"))
+                    if (clickedGameObject.Contains("redagent")) // 赤チーム
                     {
-                        Debug.Log("赤");
+                        clickedGameObject = clickedGameObject.Replace("redagent_", "");
                     }
-                    else if (clickedGameObject.Contains("blueagent"))
+                    else if (clickedGameObject.Contains("blueagent")) // 青チーム
                     {
-                        Debug.Log("青");
+                        clickedGameObject = clickedGameObject.Replace("blueagent_", "");
                     }
+
+                    string compare = selectCoordinate[0] + "," + selectCoordinate[1];
+                    if (compare.Equals(clickedGameObject))
+                    {
+                        selectMode(false);
+                        selectCoordinate = new int[2] { -1, -1 };
+                        return;
+                    }
+                    // クリックしたオブジェクトの座標を区切ってint[]としてselectCoordinateに渡す
+                    selectCoordinate = clickedGameObject.Split(',').Select(s => int.Parse(s)).ToArray();
+                    selectMode(true);
                 }
                 else
                 {
@@ -192,6 +206,42 @@ namespace Meguru
         }
 
         //---------------------------------出力---------------------------------//
+
+        // 移動するマスの選択モード
+        private void selectMode(bool orMode)
+        {
+            if (!orMode)
+            {
+                for (int x = selectCoordinate[0] - 1; x <= selectCoordinate[0] + 1; x++)
+                {
+                    for (int y = selectCoordinate[1] - 1; y <= selectCoordinate[1] + 1; y++)
+                    {
+                        if (x == selectCoordinate[0] && y == selectCoordinate[1])
+                        {
+                            continue;
+                        }
+                        GameObject sTile = GameObject.Find("selecttile_" + x + "," + y);
+                        sTile.GetComponent<SpriteRenderer>().enabled = false;
+                        sTile.GetComponent<BoxCollider2D>().enabled = false;
+                    }
+                }
+                return;
+            }
+
+            for (int x = selectCoordinate[0] - 1; x <= selectCoordinate[0] + 1; x++)
+            {
+                for (int y = selectCoordinate[1] - 1; y <= selectCoordinate[1] + 1; y++)
+                {
+                    if (x == selectCoordinate[0] && y == selectCoordinate[1])
+                    {
+                        continue;
+                    }
+                    GameObject sTile = GameObject.Find("selecttile_" + x + "," + y);
+                    sTile.GetComponent<SpriteRenderer>().enabled = true;
+                    sTile.GetComponent<BoxCollider2D>().enabled = true;
+                }
+            }
+        }
 
         // フィールド作成
         private void makeField()
@@ -313,7 +363,7 @@ namespace Meguru
         {
             foreach (Agent agent in agents)
             {
-                string current = agent.current.x + "_" + agent.current.y;
+                string current = agent.current.x + "," + agent.current.y;
                 switch (agent.id)
                 {
                     // タイルそれぞれの描画設定のオンオフで判別する GetComponent<SpriteRenderer>()
@@ -392,7 +442,7 @@ namespace Meguru
                     tile.GetComponent<SpriteRenderer>().enabled = false;
                     RedTileRename(tile, w, h); // タイルの名前を変更
 
-                    // ブルーのタイル
+                    // プレイヤーが選択中のタイル
                     tile = Instantiate(selectTile, tilePosition, Quaternion.identity);
                     tile.transform.SetParent(allSelectTile.transform, false);
                     tile.GetComponent<SpriteRenderer>().enabled = false;
