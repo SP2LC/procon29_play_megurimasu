@@ -216,7 +216,7 @@ namespace Meguru
                 {
                     for (int y = selectCoordinate[1] - 1; y <= selectCoordinate[1] + 1; y++)
                     {
-                        if (x == selectCoordinate[0] && y == selectCoordinate[1])
+                        if ((x == selectCoordinate[0] && y == selectCoordinate[1]) || (x < 0 || y < 0))
                         {
                             continue;
                         }
@@ -232,7 +232,7 @@ namespace Meguru
             {
                 for (int y = selectCoordinate[1] - 1; y <= selectCoordinate[1] + 1; y++)
                 {
-                    if (x == selectCoordinate[0] && y == selectCoordinate[1])
+                    if ((x == selectCoordinate[0] && y == selectCoordinate[1]) || (x < 0 || y < 0))
                     {
                         continue;
                     }
