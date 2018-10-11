@@ -11,7 +11,6 @@ namespace Meguru
     public class Agent
     {
         public Point current; // 現在の位置
-        public List<Action> actions; // 今までの行動の履歴
         public int id;
         public static int agentMax = 4;
 
@@ -19,7 +18,6 @@ namespace Meguru
         {
             this.current = first;
             this.id = id;
-            this.actions = new List<Action>();
         }
 
         public static List<Agent> ReadStatic()

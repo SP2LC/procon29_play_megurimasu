@@ -50,26 +50,6 @@ namespace Meguru
         }
     }
 
-    public enum Way : int
-    {
-        STAY = 0, // 以後1ずつオートインクリメント
-        FRONT,
-        FRONTRIGHT,
-        RIGHT,
-        BACKRIGHT,
-        BACK,
-        BACKLEFT,
-        LEFT,
-        FRONTLEFT
-    }
-
-    public enum Motion : int
-    {
-        STAY = 0,
-        MOVE = 1,
-        BREAK = 2
-    }
-
     public class Main : MonoBehaviour
     {
         private float heiSym, widSym; // 縦,横の比率を画面中央を中心とさせる為
@@ -95,15 +75,16 @@ namespace Meguru
         private RectTransform textRect; //テキストのRectTransform
         private Vector2 textPosition; // テキストの最終的な位置
 
-        private string clickedGameObject; // クリックしたゲームオブジェクト
         private float timeElapsed; // Update関数のタイマー処理に利用
         Field field; // フィールド(タイルの集合体)
         List<Agent> agents; // Agentの情報s
         Output data; // 再入力から出力する用のデータの集合体
+        Output oldData; // 1ターン前のデータ
         private bool dataInputIsFinish; // 再入力用のデータ入力が完了したかどうか
         private int idData; // Output用のデータ作成のAgentの識別に用いる
         private bool createFieldIsFinish; // フィールドを作成したかどうか
-        private int[] selectCoordinate; // 選択した座標 [0]:x, [1]:y
+        private Point selectCoordinate; // 選択した座標 [0]:x, [1]:y
+        private string clickedGameObject; // クリックしたゲームオブジェクト
 
 
         // Use this for initialization
@@ -118,8 +99,10 @@ namespace Meguru
 
             timerText = GameObject.Find("Canvas/Timer");
 
+            data = new Output();
+            oldData = new Output();
             createFieldIsFinish = false;
-            selectCoordinate = new int[2] { -1, -1 };
+            selectCoordinate = new Point(-1, -1);
 
             makeField(); //フィールド作成
         }
@@ -144,8 +127,10 @@ namespace Meguru
                     clickedGameObject = hit2d.transform.gameObject.name;
                 }
 
+                if (clickedGameObject == null) return;
+
                 // 操作
-                if (clickedGameObject != null)
+                if (clickedGameObject.Contains("agent")) // Agentの選択
                 {
                     if (clickedGameObject.Contains("redagent")) // 赤チーム
                     {
@@ -156,54 +141,70 @@ namespace Meguru
                         clickedGameObject = clickedGameObject.Replace("blueagent_", "");
                     }
 
-                    string compare = selectCoordinate[0] + "," + selectCoordinate[1];
+                    string compare = selectCoordinate.x + "," + selectCoordinate.x;
                     if (compare.Equals(clickedGameObject))
                     {
                         selectMode(false);
-                        selectCoordinate = new int[2] { -1, -1 };
+                        selectCoordinate = new Point(-1, -1);
                         return;
                     }
                     // クリックしたオブジェクトの座標を区切ってint[]としてselectCoordinateに渡す
-                    selectCoordinate = clickedGameObject.Split(',').Select(s => int.Parse(s)).ToArray();
+                    int[] bridge = clickedGameObject.Split(',').Select(s => int.Parse(s)).ToArray();
+                    selectCoordinate = new Point(bridge[0], bridge[1]);
+
                     selectMode(true);
                 }
-                else
+                else if (clickedGameObject.Contains("select")) // 移動先，除去先の選択
                 {
-                    Debug.Log("nullである");
+                    clickedGameObject = clickedGameObject.Replace("selecttile_", "");
+                    int[] bridge = clickedGameObject.Split(',').Select(s => int.Parse(s)).ToArray();
+                    Point nextPoint = new Point(bridge[0], bridge[1]);
+
+                    foreach (Agent agent in agents)
+                    {
+                        if (agent.current == selectCoordinate)
+                        {
+                            Debug.Log("current compare: " + agent.current.x + agent.current.y + selectCoordinate.x + selectCoordinate.y);
+                            Debug.Log("next: " + nextPoint.x + nextPoint.y);
+                            int id = agent.id;
+                            data.agents[id].current = nextPoint;
+                            selectMode(false);
+                            selectCoordinate = new Point(-1, -1);
+                            return;
+                        }
+                    }
                 }
             }
 
             if (8f < timeElapsed) // Reload
             {
                 timeElapsed = 0;
-                if (!createFieldIsFinish) // フィールドがない
-                    return;
 
-                StartCoroutine(ReloadCoroutine());
+                Output.DataOutput(data); // データの出力
+                updateField(); //フィールド作成
+                //StartCoroutine(ReloadCoroutine());
             }
             //-------------------------//
         }
 
-        private IEnumerator ReloadCoroutine()
-        {
-            ConnectServer con = new ConnectServer(); // データのロード
-            yield return StartCoroutine(con.Connect());
+        // private IEnumerator ReloadCoroutine()
+        // {
+        //     ConnectServer con = new ConnectServer(); // データのロード
+        //     yield return StartCoroutine(con.Connect());
 
-            TileReset(); // タイルのリセット
-            AgentPositionReset(); // Agentタイルのリセット
+        //     TileReset(); // タイルのリセット
+        //     AgentPositionReset(); // Agentタイルのリセット
 
-            field = Field.ReadStatic(); // 再読み込み
-            agents = Agent.ReadStatic(); // 再読み込み
+        //     field = Field.ReadStatic(); // 再読み込み
+        //     agents = Agent.ReadStatic(); // 再読み込み
 
-            if (field == null) // 情報が読み込まれていない
-                yield break;
+        //     if (field == null) // 情報が読み込まれていない
+        //         yield break;
 
-            AddActionToAgent(Action.ReadDynamic(agents)); // agentsにactionを設定
-
-            AgentPosition(); // Agentの位置更新
-            TileUpdate(); // タイルのアップデート
-            TextUpdate(); // テキストのアップデート
-        }
+        //     AgentPosition(); // Agentの位置更新
+        //     TileUpdate(); // タイルのアップデート
+        //     TextUpdate(); // テキストのアップデート
+        // }
 
         //---------------------------------出力---------------------------------//
 
@@ -212,11 +213,11 @@ namespace Meguru
         {
             if (!orMode)
             {
-                for (int x = selectCoordinate[0] - 1; x <= selectCoordinate[0] + 1; x++)
+                for (int x = selectCoordinate.x - 1; x <= selectCoordinate.x + 1; x++)
                 {
-                    for (int y = selectCoordinate[1] - 1; y <= selectCoordinate[1] + 1; y++)
+                    for (int y = selectCoordinate.y - 1; y <= selectCoordinate.y + 1; y++)
                     {
-                        if ((x == selectCoordinate[0] && y == selectCoordinate[1]) || (x < 0 || y < 0))
+                        if ((x == selectCoordinate.x && y == selectCoordinate.y) || (x < 0 || y < 0))
                         {
                             continue;
                         }
@@ -228,11 +229,11 @@ namespace Meguru
                 return;
             }
 
-            for (int x = selectCoordinate[0] - 1; x <= selectCoordinate[0] + 1; x++)
+            for (int x = selectCoordinate.x - 1; x <= selectCoordinate.x + 1; x++)
             {
-                for (int y = selectCoordinate[1] - 1; y <= selectCoordinate[1] + 1; y++)
+                for (int y = selectCoordinate.y - 1; y <= selectCoordinate.y + 1; y++)
                 {
-                    if ((x == selectCoordinate[0] && y == selectCoordinate[1]) || (x < 0 || y < 0))
+                    if ((x == selectCoordinate.x && y == selectCoordinate.y) || (x < 0 || y < 0))
                     {
                         continue;
                     }
@@ -256,8 +257,6 @@ namespace Meguru
             if (field == null) // 情報が読み込まれていない
                 return;
 
-            AddActionToAgent(Action.ReadDynamic(agents)); // agentsにactionを設定
-
             CreateField(); // マスの生成
             AgentPosition(); // Agentの位置更新
             TileUpdate(); // タイルのアップデート
@@ -265,20 +264,18 @@ namespace Meguru
             createFieldIsFinish = true;
         }
 
-        // それぞれのAgentの読み込んだActionを設定する
-        private void AddActionToAgent(List<Action> actions)
+        // フィールドの更新
+        private void updateField()
         {
-            var id = 0;
-            foreach (Action action in actions)
-            {
-                agents[id].actions.Add(action);
-                if (id == 0)
-                {
-                    id = 3;
-                }
-                else
-                    id = 0;
-            }
+            TileReset(); // タイルのリセット
+            AgentPositionReset(); // Agentタイルのリセット
+
+            field = Field.ReadStatic(); // 再読み込み
+            agents = Agent.ReadStatic(); // 再読み込み
+
+            AgentPosition(); // Agentの位置更新
+            TileUpdate(); // タイルのアップデート
+            TextUpdate(); // テキストのアップデート
         }
 
         // タイル情報の更新

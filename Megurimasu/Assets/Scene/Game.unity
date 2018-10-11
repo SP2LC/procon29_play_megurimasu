@@ -342,7 +342,7 @@ RectTransform:
   - {fileID: 1228700467}
   - {fileID: 689750831}
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -471,6 +471,7 @@ MonoBehaviour:
   redAgent: {fileID: 1104408466348684, guid: 49bac9e93707d4845b2f41d7a3ce5043, type: 2}
   blueTile: {fileID: 1702906083512784, guid: 3de182051466d4165962f4286e340261, type: 2}
   redTile: {fileID: 1298623614182104, guid: a7b50f7290d0a4a3ebb3fc12440a8f7a, type: 2}
+  selectTile: {fileID: 1897132867010314, guid: d5e32f67a86874fac95081b866a99131, type: 2}
   pointTextPrefab: {fileID: 1080791186720524, guid: a6976a1209f4041d180640c246d3df70,
     type: 2}
 --- !u!114 &744681080
@@ -511,6 +512,34 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1000641299
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1000641300}
+  m_Layer: 0
+  m_Name: SelectTile
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1000641300
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1000641299}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1124230183
 GameObject:
@@ -703,5 +732,5 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 8
+  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
