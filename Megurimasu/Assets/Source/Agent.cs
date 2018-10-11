@@ -8,6 +8,7 @@ using UnityEngine;
 
 namespace Meguru
 {
+    [Serializable]
     public class Agent
     {
         public Point current; // 現在の位置

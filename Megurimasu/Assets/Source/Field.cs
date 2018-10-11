@@ -6,6 +6,7 @@ using System.Text;
 
 namespace Meguru
 {
+    [Serializable]
     public class Field
     {
         public Tile[,] tiles;

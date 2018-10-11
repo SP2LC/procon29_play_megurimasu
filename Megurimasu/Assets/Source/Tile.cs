@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace Meguru
 {
+    [Serializable]
     public class Tile
     {
         public int stat;

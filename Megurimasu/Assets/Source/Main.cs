@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -14,6 +15,7 @@ namespace Meguru
     @x x座標
     @y y座標
      */
+    [Serializable]
     public class Point
     {
         public int x, y;
@@ -78,8 +80,8 @@ namespace Meguru
         private float timeElapsed; // Update関数のタイマー処理に利用
         Field field; // フィールド(タイルの集合体)
         List<Agent> agents; // Agentの情報s
-        Output data; // 再入力から出力する用のデータの集合体
-        Output oldData; // 1ターン前のデータ
+        private static Output data; // 再入力から出力する用のデータの集合体 基本的にプレイヤーの行動はこっちに保存
+        private static Output oldData; // 1ターン前のデータ
         private bool dataInputIsFinish; // 再入力用のデータ入力が完了したかどうか
         private int idData; // Output用のデータ作成のAgentの識別に用いる
         private bool createFieldIsFinish; // フィールドを作成したかどうか
@@ -104,7 +106,7 @@ namespace Meguru
             createFieldIsFinish = false;
             selectCoordinate = new Point(-1, -1);
 
-            makeField(); //フィールド作成
+            MakeField(); //フィールド作成
         }
 
         // Update is called once per frame
@@ -141,7 +143,7 @@ namespace Meguru
                         clickedGameObject = clickedGameObject.Replace("blueagent_", "");
                     }
 
-                    string compare = selectCoordinate.x + "," + selectCoordinate.x;
+                    string compare = selectCoordinate.x + "," + selectCoordinate.y;
                     if (compare.Equals(clickedGameObject))
                     {
                         selectMode(false);
@@ -164,8 +166,8 @@ namespace Meguru
                     {
                         if (agent.current == selectCoordinate)
                         {
-                            Debug.Log("current compare: " + agent.current.x + agent.current.y + selectCoordinate.x + selectCoordinate.y);
-                            Debug.Log("next: " + nextPoint.x + nextPoint.y);
+                            // Debug.Log("current compare: " + agent.current.x + agent.current.y + selectCoordinate.x + selectCoordinate.y);
+                            // Debug.Log("next: " + nextPoint.x + nextPoint.y);
                             int id = agent.id;
                             data.agents[id].current = nextPoint;
                             selectMode(false);
@@ -180,31 +182,13 @@ namespace Meguru
             {
                 timeElapsed = 0;
 
+                SameLocationCheck(); // 同じマスを選択していないかの確認
                 Output.DataOutput(data); // データの出力
-                updateField(); //フィールド作成
-                //StartCoroutine(ReloadCoroutine());
+                UpdateField(); //フィールド作成
+                oldData = Util.DeepCopy<Output>(data);
             }
             //-------------------------//
         }
-
-        // private IEnumerator ReloadCoroutine()
-        // {
-        //     ConnectServer con = new ConnectServer(); // データのロード
-        //     yield return StartCoroutine(con.Connect());
-
-        //     TileReset(); // タイルのリセット
-        //     AgentPositionReset(); // Agentタイルのリセット
-
-        //     field = Field.ReadStatic(); // 再読み込み
-        //     agents = Agent.ReadStatic(); // 再読み込み
-
-        //     if (field == null) // 情報が読み込まれていない
-        //         yield break;
-
-        //     AgentPosition(); // Agentの位置更新
-        //     TileUpdate(); // タイルのアップデート
-        //     TextUpdate(); // テキストのアップデート
-        // }
 
         //---------------------------------出力---------------------------------//
 
@@ -244,8 +228,28 @@ namespace Meguru
             }
         }
 
+        // 同じマスを選択していないかの確認(同じだったらかぶった人たちの場所を戻す))
+        private static void SameLocationCheck()
+        {
+            foreach (Agent agent in data.agents)
+            {
+                int agentID = agent.id;
+                foreach (Agent compareAgent in data.agents)
+                {
+                    int compareAgentID = compareAgent.id;
+                    if (agentID == compareAgentID) continue;
+
+                    if (agent.current == compareAgent.current)
+                    {
+                        data.agents[agentID].current = oldData.agents[agentID].current;
+                        data.agents[compareAgentID].current = oldData.agents[compareAgentID].current;
+                    }
+                }
+            }
+        }
+
         // フィールド作成
-        private void makeField()
+        private void MakeField()
         {
             Debug.Log(ReadData.staticData);
             if (createFieldIsFinish) // フィールドが作成済み
@@ -265,7 +269,7 @@ namespace Meguru
         }
 
         // フィールドの更新
-        private void updateField()
+        private void UpdateField()
         {
             TileReset(); // タイルのリセット
             AgentPositionReset(); // Agentタイルのリセット
