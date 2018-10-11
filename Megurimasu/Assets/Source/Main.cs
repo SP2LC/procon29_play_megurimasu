@@ -146,7 +146,7 @@ namespace Meguru
                     string compare = selectCoordinate.x + "," + selectCoordinate.y;
                     if (compare.Equals(clickedGameObject))
                     {
-                        selectMode(false);
+                        SelectMode(false);
                         selectCoordinate = new Point(-1, -1);
                         return;
                     }
@@ -154,7 +154,7 @@ namespace Meguru
                     int[] bridge = clickedGameObject.Split(',').Select(s => int.Parse(s)).ToArray();
                     selectCoordinate = new Point(bridge[0], bridge[1]);
 
-                    selectMode(true);
+                    SelectMode(true);
                 }
                 else if (clickedGameObject.Contains("select")) // 移動先，除去先の選択
                 {
@@ -164,13 +164,11 @@ namespace Meguru
 
                     foreach (Agent agent in agents)
                     {
-                        if (agent.current == selectCoordinate)
+                        if (agent.current == selectCoordinate) // 誰が選択中か模索する
                         {
-                            // Debug.Log("current compare: " + agent.current.x + agent.current.y + selectCoordinate.x + selectCoordinate.y);
-                            // Debug.Log("next: " + nextPoint.x + nextPoint.y);
                             int id = agent.id;
                             data.agents[id].current = nextPoint;
-                            selectMode(false);
+                            SelectMode(false);
                             selectCoordinate = new Point(-1, -1);
                             return;
                         }
@@ -181,6 +179,11 @@ namespace Meguru
             if (8f < timeElapsed) // Reload
             {
                 timeElapsed = 0;
+
+                foreach (Agent agent in agents)
+                {
+                    RemovalMode(agent, data.agents[agent.id].current); // タイルを除去だったら除去
+                }
 
                 SameLocationCheck(); // 同じマスを選択していないかの確認
                 Output.DataOutput(data); // データの出力
@@ -193,7 +196,7 @@ namespace Meguru
         //---------------------------------出力---------------------------------//
 
         // 移動するマスの選択モード
-        private void selectMode(bool orMode)
+        private void SelectMode(bool orMode)
         {
             if (!orMode)
             {
@@ -226,6 +229,42 @@ namespace Meguru
                     sTile.GetComponent<BoxCollider2D>().enabled = true;
                 }
             }
+        }
+
+        // タイル除去だったら除去
+        private bool RemovalMode(Agent agent, Point nextPoint)
+        {
+            string targetTile = nextPoint.x + "," + nextPoint.y;
+            int targetTileState = data.field.tiles[nextPoint.x, nextPoint.y].stat;
+            int agentID = agent.id;
+
+            if (targetTileState == 0) return false;
+
+            /*
+            id 赤:0,3   青:1,2
+            赤チームだったら青チームのタイルを除去するため，agentのidと逆の色をoffにする。
+             */
+            switch (agent.id)
+            {
+                // タイルそれぞれの描画設定のオンオフで判別する GetComponent<SpriteRenderer>()
+                case 0:
+                case 3:
+                    if (targetTileState == 1) return false;
+                    GameObject.Find("bluetile_" + targetTile).GetComponent<SpriteRenderer>().enabled = false;
+                    break;
+                case 1:
+                case 2:
+                    if (targetTileState == 2) return false;
+                    GameObject.Find("redtile_" + targetTile).GetComponent<SpriteRenderer>().enabled = false;
+                    break;
+                default:
+                    break;
+            }
+
+            data.agents[agentID].current = oldData.agents[agentID].current;
+            data.field.tiles[nextPoint.x, nextPoint.y].stat = 0;
+
+            return true;
         }
 
         // 同じマスを選択していないかの確認(同じだったらかぶった人たちの場所を戻す))
@@ -343,12 +382,14 @@ namespace Meguru
                     // タイルそれぞれの描画設定のオンオフで判別する GetComponent<SpriteRenderer>()
                     case 0:
                     case 3:
+                        data.field.tiles[agent.current.x, agent.current.y].stat = 1;
                         GameObject.Find("redagent_" + current).GetComponent<SpriteRenderer>().enabled = true;
                         GameObject.Find("redtile_" + current).GetComponent<SpriteRenderer>().enabled = true;
                         GameObject.Find("redagent_" + current).GetComponent<BoxCollider2D>().enabled = true;
                         break;
                     case 1:
                     case 2:
+                        data.field.tiles[agent.current.x, agent.current.y].stat = 2;
                         GameObject.Find("blueagent_" + current).GetComponent<SpriteRenderer>().enabled = true;
                         GameObject.Find("bluetile_" + current).GetComponent<SpriteRenderer>().enabled = true;
                         GameObject.Find("blueagent_" + current).GetComponent<BoxCollider2D>().enabled = true;
@@ -442,6 +483,8 @@ namespace Meguru
                     tile.transform.SetParent(allRedTile.transform, false);
                     tile.GetComponent<SpriteRenderer>().enabled = false;
                     RedTileRename(tile, w, h); // タイルの名前を変更
+
+                    tilePosition.z = 300;
 
                     // プレイヤーが選択中のタイル
                     tile = Instantiate(selectTile, tilePosition, Quaternion.identity);
