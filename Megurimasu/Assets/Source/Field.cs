@@ -38,7 +38,7 @@ namespace Meguru
             Field returnField;
 
             // データを渡す
-            var allText = ReadData.staticData;
+            var allText = GetData.staticData;
             // 読み込みやすくするため，文字を置き換える
             allText = allText.Replace("/", ":");
 

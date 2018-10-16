@@ -22,7 +22,7 @@ namespace Meguru
             string url = "http://megurimasu-sp2lc.skr.jp/test.txt";
             var www = new WWW(url);
             yield return www;
-            ReadData.staticData = www.text;
+            GetData.staticData = www.text;
             Debug.Log("get is finished");
         }
     }

@@ -28,7 +28,7 @@ namespace Meguru
 
         public override string ToString()
         {
-            return "(" + x + ", " + y + ")";
+            return x + ":" + y;
         }
 
         public static Point operator +(Point a, Point b)
@@ -77,17 +77,18 @@ namespace Meguru
         private RectTransform textRect; //テキストのRectTransform
         private Vector2 textPosition; // テキストの最終的な位置
 
+        public static bool myTeam; // true:host(red), false:client(blue)
+        public static bool[] inputFinished; // 入力が終了した時にtrueにする[0]:host [1]:client
         private float timeElapsed; // Update関数のタイマー処理に利用
         Field field; // フィールド(タイルの集合体)
         List<Agent> agents; // Agentの情報s
-        private static Output data; // 再入力から出力する用のデータの集合体 基本的にプレイヤーの行動はこっちに保存
+        public static Output data; // 再入力から出力する用のデータの集合体 基本的にプレイヤーの行動はこっちに保存
         private static Output oldData; // 1ターン前のデータ
         private bool dataInputIsFinish; // 再入力用のデータ入力が完了したかどうか
         private int idData; // Output用のデータ作成のAgentの識別に用いる
         private bool createFieldIsFinish; // フィールドを作成したかどうか
         private Point selectCoordinate; // 選択した座標 [0]:x, [1]:y
         private string clickedGameObject; // クリックしたゲームオブジェクト
-
 
         // Use this for initialization
         void Start()
@@ -101,6 +102,7 @@ namespace Meguru
 
             timerText = GameObject.Find("Canvas/Timer");
 
+            inputFinished = new bool[2] { false, false };
             data = new Output();
             oldData = new Output();
             createFieldIsFinish = false;
@@ -112,10 +114,17 @@ namespace Meguru
         // Update is called once per frame
         void Update()
         {
-            timeElapsed += Time.deltaTime;
-            timerText.GetComponent<Text>().text = timeElapsed.ToString();
+            // タイマーを用いる時用
+            // timeElapsed += Time.deltaTime;
+            // timerText.GetComponent<Text>().text = timeElapsed.ToString();
 
             //-----------出力-----------//
+            if (Input.GetKey(KeyCode.Return)) // データの入力が終わったら実行
+            {
+                if (myTeam) inputFinished[0] = true;
+                else Output.DataOutput(data);
+            }
+
             if (Input.GetMouseButtonDown(0))
             {
                 // クリックしたものの取得
@@ -134,13 +143,17 @@ namespace Meguru
                 // 操作
                 if (clickedGameObject.Contains("agent")) // Agentの選択
                 {
-                    if (clickedGameObject.Contains("redagent")) // 赤チーム
+                    if (clickedGameObject.Contains("redagent") && myTeam) // 赤チーム
                     {
                         clickedGameObject = clickedGameObject.Replace("redagent_", "");
                     }
-                    else if (clickedGameObject.Contains("blueagent")) // 青チーム
+                    else if (clickedGameObject.Contains("blueagent") && !myTeam) // 青チーム
                     {
                         clickedGameObject = clickedGameObject.Replace("blueagent_", "");
+                    }
+                    else
+                    {
+                        return; // 自分のチーム以外の選択だったらリターン
                     }
 
                     string compare = selectCoordinate.x + "," + selectCoordinate.y;
@@ -176,9 +189,11 @@ namespace Meguru
                 }
             }
 
-            if (8f < timeElapsed) // Reload
+            // if (8f < timeElapsed) // Reload // Timerを用いるときに使用
+            if (inputFinished[0] && inputFinished[1])
             {
-                timeElapsed = 0;
+                //timeElapsed = 0;
+
 
                 foreach (Agent agent in agents)
                 {
@@ -290,7 +305,7 @@ namespace Meguru
         // フィールド作成
         private void MakeField()
         {
-            Debug.Log(ReadData.staticData);
+            Debug.Log(GetData.staticData);
             if (createFieldIsFinish) // フィールドが作成済み
                 return;
 

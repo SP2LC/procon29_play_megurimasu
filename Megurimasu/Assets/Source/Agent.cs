@@ -28,7 +28,7 @@ namespace Meguru
 
             string allText;
             // データ渡し
-            allText = ReadData.staticData;
+            allText = GetData.staticData;
 
             var target = allText.Split(',')[1];
 

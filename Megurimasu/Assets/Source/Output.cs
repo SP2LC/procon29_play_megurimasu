@@ -3,12 +3,19 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Runtime.InteropServices; // C# calle Javascript
 
 namespace Meguru
 {
     [Serializable]
-    class Output
+    public class Output
     {
+        [DllImport("__Internal")]
+        private static extern void SendFieldData(string str); // host: C# call Javascript
+
+        [DllImport("__Internal")]
+        private static extern void SendAgentData(string str); // client: C# call Javascript
+
         /*
         マスのサイズ,プレイヤーの位置,マスの点数,マスの状態
         */
@@ -26,6 +33,13 @@ namespace Meguru
             Field field = data.field;
             List<Agent> agents = data.agents;
             string bondData;
+
+            if (!Main.myTeam) // client
+            {
+                string agentData = ":" + agents[1].current.ToString() + ",:" + agents[2].current.ToString();
+                SendAgentData(agentData);
+                return;
+            }
 
             bondData = field.Height.ToString() + ":" + field.Width.ToString() + ",";
 
@@ -59,7 +73,8 @@ namespace Meguru
                     bondData += "/";
             }
 
-            ReadData.staticData = bondData;
+            GetData.staticData = bondData;
+            SendFieldData(bondData);
         }
     }
 }
