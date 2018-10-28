@@ -1,3 +1,2 @@
 # procon29_play_megurimasu
-実行してCキーでステージの作成
-Rキーでリロード
+ゲームで使用するフィールド情報はprocon29_creatorを参照
