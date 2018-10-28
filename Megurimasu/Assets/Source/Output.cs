@@ -36,7 +36,7 @@ namespace Meguru
 
             if (!Main.myTeam) // client
             {
-                string agentData = ":" + agents[1].current.ToString() + ",:" + agents[2].current.ToString();
+                string agentData = agents[1].current.ToString() + "," + agents[2].current.ToString();
                 SendAgentData(agentData);
                 return;
             }

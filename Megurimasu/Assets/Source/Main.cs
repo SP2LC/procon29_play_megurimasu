@@ -28,7 +28,7 @@ namespace Meguru
 
         public override string ToString()
         {
-            return x + ":" + y;
+            return x + "," + y;
         }
 
         public static Point operator +(Point a, Point b)
@@ -89,6 +89,9 @@ namespace Meguru
         private bool createFieldIsFinish; // フィールドを作成したかどうか
         private Point selectCoordinate; // 選択した座標 [0]:x, [1]:y
         private string clickedGameObject; // クリックしたゲームオブジェクト
+        public static int startField;
+
+        public static bool needUpdate; //client用，フィールドの情報がきてアプデが必要だったらtrue
 
         // Use this for initialization
         void Start()
@@ -102,13 +105,15 @@ namespace Meguru
 
             timerText = GameObject.Find("Canvas/Timer");
 
+            myTeam = true;
             inputFinished = new bool[2] { false, false };
             data = new Output();
             oldData = new Output();
             createFieldIsFinish = false;
             selectCoordinate = new Point(-1, -1);
+            startField = 0;
 
-            MakeField(); //フィールド作成
+            //MakeField(); //フィールド作成
         }
 
         // Update is called once per frame
@@ -119,9 +124,23 @@ namespace Meguru
             // timerText.GetComponent<Text>().text = timeElapsed.ToString();
 
             //-----------出力-----------//
+            if (startField == 1)
+            {
+                MakeField(); //フィールド作成
+                startField = 2;
+            }
+            if (needUpdate)
+            {
+                UpdateField();
+            }
+
             if (Input.GetKey(KeyCode.Return)) // データの入力が終わったら実行
             {
-                if (myTeam) inputFinished[0] = true;
+                if (myTeam)
+                {
+                    inputFinished[0] = true;
+                    Debug.Log("" + inputFinished[0] + inputFinished[1]);
+                }
                 else Output.DataOutput(data);
             }
 
@@ -190,9 +209,12 @@ namespace Meguru
             }
 
             // if (8f < timeElapsed) // Reload // Timerを用いるときに使用
-            if (inputFinished[0] && inputFinished[1])
+            if (Main.inputFinished[0] && Main.inputFinished[1])
             {
+                Debug.Log("kousin!!");
                 //timeElapsed = 0;
+                inputFinished[0] = false;
+                inputFinished[1] = false;
 
 
                 foreach (Agent agent in agents)
@@ -209,6 +231,19 @@ namespace Meguru
         }
 
         //---------------------------------出力---------------------------------//
+        // フィールドの更新
+        public void UpdateField()
+        {
+            TileReset(); // タイルのリセット
+            AgentPositionReset(); // Agentタイルのリセット
+
+            field = Field.ReadStatic(); // 再読み込み
+            agents = Agent.ReadStatic(); // 再読み込み
+
+            AgentPosition(); // Agentの位置更新
+            TileUpdate(); // タイルのアップデート
+            TextUpdate(); // テキストのアップデート
+        }
 
         // 移動するマスの選択モード
         private void SelectMode(bool orMode)
@@ -305,7 +340,6 @@ namespace Meguru
         // フィールド作成
         private void MakeField()
         {
-            Debug.Log(GetData.staticData);
             if (createFieldIsFinish) // フィールドが作成済み
                 return;
 
@@ -320,20 +354,6 @@ namespace Meguru
             TileUpdate(); // タイルのアップデート
             AgentPosition(); // Agentの位置情報の追加
             createFieldIsFinish = true;
-        }
-
-        // フィールドの更新
-        private void UpdateField()
-        {
-            TileReset(); // タイルのリセット
-            AgentPositionReset(); // Agentタイルのリセット
-
-            field = Field.ReadStatic(); // 再読み込み
-            agents = Agent.ReadStatic(); // 再読み込み
-
-            AgentPosition(); // Agentの位置更新
-            TileUpdate(); // タイルのアップデート
-            TextUpdate(); // テキストのアップデート
         }
 
         // タイル情報の更新

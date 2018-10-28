@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Unity WebGL Player | Megurimasu</title>
+  <link rel="shortcut icon" href="TemplateData/favicon.ico">
+  <link rel="stylesheet" href="TemplateData/style.css">
+  <script type="text/javascript" src="//cdn.webrtc.ecl.ntt.com/skyway-latest.js"></script>
+  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="TemplateData/UnityProgress.js"></script>
+  <script src="Build/UnityLoader.js"></script>
+  <script type="text/javascript" src="../key.js"></script>
+  <script type="text/javascript" src="script.js"></script>
+</head>
+
+<body>
+  <div>
+    Your Peer ID is: <span id="pid"></span><br>
+    Connect to a peer: <span id="cid"></span><br>
+    <form id="connect">
+      <input type="text" id="rid" placeholder="Someone else's id">
+      <input class="button" type="submit" value="Connect">
+    </form>
+
+    <form id="set">
+      <input type="text" id="fdt" placeholder="field">
+      <input class="button" type="submit" value="Set">
+    </form>
+
+    <div id="gameContainer" style="width: 600px; height: 960px"></div>
+    <div class="footer">
+      <div class="webgl-logo"></div>
+      <div class="fullscreen" onclick="gameInstance.SetFullscreen(1)"></div>
+      <div class="title">Megurimasu</div>
+    </div>
+  </div>
+</body>
+
+</html>

@@ -23,21 +23,50 @@ namespace Meguru
 
         }
 
-        public void setTeam(bool myTeam)
+        public void InputFieldData(string fieldData)
         {
-            Main.myTeam = myTeam;
+            if (Main.startField == 0)
+            {
+                staticData = fieldData;
+                Main.startField = 1;
+            }
         }
 
-        public void getClientData(string agentData)
+        public void SetTeam(string myTeam)
         {
+            if (myTeam == "true")
+            {
+                Main.myTeam = true;
+            }
+            else
+            {
+                Main.myTeam = false;
+            }
+        }
+
+        public void GetClientData(string agentData)
+        {
+            Debug.Log("1");
             string[] splitAgentData = agentData.Split(',');
+            Debug.Log("2");
 
             Main.data.agents[1].current.x = int.Parse(splitAgentData[0]);
+            Debug.Log("3");
             Main.data.agents[1].current.y = int.Parse(splitAgentData[1]);
+            Debug.Log("4");
             Main.data.agents[2].current.x = int.Parse(splitAgentData[2]);
+            Debug.Log("5");
             Main.data.agents[2].current.y = int.Parse(splitAgentData[3]);
+            Debug.Log("6");
 
             Main.inputFinished[1] = true;
+            Debug.Log("inpu:  ==" + Main.inputFinished[1]);
+        }
+
+        public void GetFieldData(string fieldData)
+        {
+            staticData = fieldData;
+            Main.needUpdate = true;
         }
     }
 }
