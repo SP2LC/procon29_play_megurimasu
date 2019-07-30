@@ -16,6 +16,8 @@ http://www.procon.gr.jp/wp-content/uploads//2016/12/e017e38ca89f7a0d04d6ad74319f
 - 荻野先輩
 
 ## 使用方法
+https://youtu.be/yLy4nk3rR5s
+
 ### 1.対戦相手との同期
 自分の画面に表示された`Your Peer ID is: XXXXXXXXXXX`のX部を相手と共有し，`Connect to a peer: [ Someone else's id ]`に入力し，`Connect`。
 
